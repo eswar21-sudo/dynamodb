@@ -16,16 +16,6 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.SPACELIFT_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{
-              "query": "mutation CreateStack($input: StackCreateInput!) { stackCreate(input: $input) { id name } }",
-              "variables": {
-                "input": {
-                  "name": "demo-gh-action-stack",
-                  "repository": "eswar21-sudo/dynamodb",  
-                  "branch": "main",
-                  "space": "root",  
-                  "administrative": true,
-                  "terraformProvider": "AWS",
-                  "labels": ["github-action"]
-                }
-              }
+              "query": "mutation { stackCreate(input: { name: \"demo-gh-action-stack\", repository: \"eswar21-sudo/dynamodb\", branch: \"main\", space: \"root\", administrative: true, terraformProvider: AWS, manageState: true, labels: [\"github-action\"] }) { id name } }"
             }'
+
