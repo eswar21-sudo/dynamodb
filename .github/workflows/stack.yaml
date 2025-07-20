@@ -17,5 +17,5 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.SPACELIFT_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{
-              "query": "mutation { stackCreate(input: { name: \"demo-gh-action-stack\", repository: \"eswar21-sudo/dynamodb\", branch: \"main\", space: \"root\", administrative: true, manageState: true, labels: [\"github-action\"] }) { id name } }"
+              "query": "mutation { stackCreate(input: { name: \"demo-gh-action-stack\", repository: \"eswar21-sudo/dynamodb\", branch: \"main\", space: \"root\", administrative: true, labels: [\"github-action\"] }, manageState: true) { id name } }"
             }'
