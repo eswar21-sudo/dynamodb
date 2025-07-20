@@ -1,6 +1,9 @@
 name: Create Spacelift Stack
 
 on:
+ push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
