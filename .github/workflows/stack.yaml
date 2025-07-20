@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Create Spacelift Stack
         run: |
-          curl -X POST https://api.spacelift.io/graphql \
+          curl -X POST https://eswar21-sudo.app.spacelift.io/graphql \
             -H "Authorization: Bearer ${{ secrets.SPACELIFT_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{
