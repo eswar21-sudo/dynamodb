@@ -1,26 +1,46 @@
 name: Create Spacelift Stack
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   create-stack:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      
       - name: Create Spacelift Stack
         env:
-          SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
-          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
+          API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
+          API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
         run: |
-          spacectl stack create \
-            --name example-stack \
-            --repository github.com/eswar21-sudo/dynamodb \
-            --branch main \
-            --space-id root \
-            --project-root . \
-            --manage-state true \
-            --autodeploy true
+          # Install dependencies
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+          # Get token
+          TOKEN=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
+            -H "Content-Type: application/json" \
+            -d '{
+              "grant_type": "client_credentials",
+              "client_id": "'"$API_KEY_ID"'",
+              "client_secret": "'"$API_KEY_SECRET"'",
+              "audience": "https://spacelift.io"
+            }' | jq -r .access_token)
+
+          # Create Stack
+          curl -X POST https://eswar21-sudo.app.spacelift.io/webhook/stacks \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "id": "my-stack-id",
+              "name": "My Stack from GHA",
+              "repository": "https://github.com/eswar21-sudo/tgw.git",
+              "branch": "main",
+              "space": "root",
+              "terraform_version": "1.5.0",
+              "project_root": "tgw-module",
+              "runner_image": "public.ecr.aws/spacelift/terraform:latest",
+              "autodeploy": true
+            }'
