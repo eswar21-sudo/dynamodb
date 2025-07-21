@@ -12,9 +12,12 @@ jobs:
 
     steps:
       - name: Create Spacelift Stack
+        env:
+          SPACELIFT_API_KEY: ${{ secrets.SPACELIFT_API_KEY }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
         run: |
           curl -X POST https://eswar21-sudo.app.spacelift.io/graphql \
-            -H "Authorization: Bearer ${{ secrets.SPACELIFT_API_KEY }}" \
+            -H "Authorization: Bearer ${SPACELIFT_API_KEY}:${SPACELIFT_API_KEY_SECRET}" \
             -H "Content-Type: application/json" \
             -d '{
               "query": "mutation { stackCreate(input: { name: \"demo-gh-action-stack\", repository: \"eswar21-sudo/dynamodb\", branch: \"main\", space: \"root\", administrative: true, labels: [\"github-action\"] }, manageState: true) { id name } }"
