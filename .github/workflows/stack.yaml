@@ -1,9 +1,6 @@
 name: Create Spacelift Stack
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -11,19 +8,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Encode API key credentials
-        id: auth
-        run: |
-          echo -n "${{ secrets.SPACELIFT_API_KEY_ID }}:${{ secrets.SPACELIFT_API_KEY_SECRET }}" | base64 > encoded.txt
-          echo "encoded=$(cat encoded.txt)" >> $GITHUB_OUTPUT
-
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
       - name: Create Spacelift Stack
         env:
-          AUTH_HEADER: ${{ steps.auth.outputs.encoded }}
+          SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
         run: |
-          curl -X POST https://eswar21-sudo.app.spacelift.io/graphql \
-            -H "Authorization: Basic $AUTH_HEADER" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "query": "mutation { stackCreate(input: { name: \"demo-gh-action-stack\", repository: \"eswar21-sudo/dynamodb\", branch: \"main\", space: \"root\", administrative: true, labels: [\"github-action\"] }, manageState: true) { id name } }"
-            }'
+          spacectl stack create \
+            --name example-stack \
+            --repository github.com/eswar21-sudo/dynamodb \
+            --branch main \
+            --space-id root \
+            --project-root . \
+            --manage-state true \
+            --autodeploy true
