@@ -10,15 +10,16 @@ jobs:
   create-stack:
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
       - name: Create Spacelift Stack
         env:
           API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
           API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
         run: |
-          # Install dependencies
-          sudo apt-get update
-          sudo apt-get install -y jq curl
-
           # Get token
           TOKEN=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
             -H "Content-Type: application/json" \
@@ -29,18 +30,30 @@ jobs:
               "audience": "https://spacelift.io"
             }' | jq -r .access_token)
 
-          # Create Stack
-          curl -X POST https://eswar21-sudo.app.spacelift.io/webhook/stacks \
+          # Define GraphQL payload
+          read -r -d '' PAYLOAD <<EOF
+          {
+            "query": "mutation CreateStack(\$input: StackCreateInput!) { stackCreate(input: \$input) { id } }",
+            "variables": {
+              "input": {
+                "id": "my-stack-id",
+                "name": "My Stack from GHA",
+                "repository": {
+                  "id": "eswar21-sudo/tgw"
+                },
+                "branch": "main",
+                "space": "root",
+                "terraformVersion": "1.5.0",
+                "projectRoot": "tgw-module",
+                "runnerImage": "public.ecr.aws/spacelift/terraform:latest",
+                "autodeploy": true
+              }
+            }
+          }
+          EOF
+
+          # Call GraphQL API
+          curl -s -X POST https://api.spacelift.io/graphql \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{
-              "id": "my-stack-id",
-              "name": "My Stack from GHA",
-              "repository": "https://github.com/eswar21-sudo/tgw.git",
-              "branch": "main",
-              "space": "root",
-              "terraform_version": "1.5.0",
-              "project_root": "tgw-module",
-              "runner_image": "public.ecr.aws/spacelift/terraform:latest",
-              "autodeploy": true
-            }'
+            -d "$PAYLOAD"
