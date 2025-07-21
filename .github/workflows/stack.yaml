@@ -39,12 +39,12 @@ jobs:
                 "id": "my-stack-id",
                 "name": "My Stack from GHA",
                 "repository": {
-                  "id": "eswar21-sudo/tgw"
+                  "id": "eswar21-sudo/dynamodb"
                 },
                 "branch": "main",
                 "space": "root",
-                "terraformVersion": "1.5.0",
-                "projectRoot": "tgw-module",
+                "terraformVersion": "1.5.7",
+                "projectRoot": "dynamodb",
                 "runnerImage": "public.ecr.aws/spacelift/terraform:latest",
                 "autodeploy": true
               }
