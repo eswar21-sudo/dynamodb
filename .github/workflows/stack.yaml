@@ -1,25 +1,30 @@
 name: Create Spacelift Stack
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   create-stack:
     runs-on: ubuntu-latest
-
     steps:
       - name: Create Spacelift Stack
         env:
-          SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY }}
-          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
-          
+          API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
+          API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
         run: |
-          curl -X POST https://eswar21-sudo.app.spacelift.io/graphql \
-            -H "Authorization: Bearer ${SPACELIFT_API_KEY_ID}:${SPACELIFT_API_KEY_SECRET}" \
+          # Install dependencies
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+          # Get token
+          TOKEN=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
             -H "Content-Type: application/json" \
             -d '{
-              "query": "mutation { stackCreate(input: { name: \"demo-gh-action-stack\", repository: \"eswar21-sudo/dynamodb\", branch: \"main\", space: \"root\", administrative: true, labels: [\"github-action\"] }, manageState: true) { id name } }"
-            }'
+              "grant_type": "client_credentials",
+              "client_id": "'"$API_KEY_ID"'",
+              "client_secret": "'"$API_KEY_SECRET"'",
+              "audience": "https://spacelift.io"
+            }' | jq -r .access_token)
